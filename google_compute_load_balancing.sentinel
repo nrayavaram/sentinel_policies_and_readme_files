@@ -1,0 +1,36 @@
+import "tfplan-functions" as plan
+import "strings"
+import "types"
+
+allowable_load_balancer = "INTERNAL_MANAGED"
+fwResources = plan.find_resources("google_compute_forwarding_rule")
+#print(fwResources)
+
+
+messages = {}
+fwRulesMap = {}
+for fwResources as address,rc {
+    #fwRulesMap[address] = []
+    #allowRules = plan.evaluate_attribute(rc,"allow")
+    load_balancer = plan.evaluate_attribute(rc.change.after, "load_balancing_scheme")
+    #print(load_balancer)
+    if load_balancer != allowable_load_balancer  {
+        message =(load_balancer + " is not allowed")
+            if address in keys(messages) {
+                append(messages[address],message)
+            } else {
+                messages[address] = [message]}
+    }          
+
+}
+
+#print(fwResources)
+print(messages)
+
+#main = rule { true }
+
+
+GCP_Load_Balancer = rule { length(messages) is 0 }
+
+
+main = rule { GCP_Load_Balancer}
